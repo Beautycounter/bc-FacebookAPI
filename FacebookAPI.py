@@ -16,46 +16,28 @@ print(argumentList)
 #app_secret = sys.argv[2]
 #access_token = sys.argv[3]
 #id = sys.argv[4]
+#sqlConnectionString = sys.argv[5]
+#exec = sys.argv[6]
 
 app_id = '3139641912761065'
 app_secret = 'aa247ebe0bf724f3b395db626e368515'
 access_token = 'EAAsnfNjumukBAPKDzu1sE2Xs9WZBIIu1HGMQpHYizOzaIlFlLUyJDdiJ0IpVqhG2oYqEVWembJURnMjUXSGstWwSgC5Y6rYx8rogfLJF3MfZCNssZAZCCoyCtk4QugZAPiBOSTxMCqtiLwXrMyESPPNyDxio5RzcVZC9MffvG9jNkVAbXZBWeGZC' # Your user access token
 id = 'act_1911651192179072'
-
-#'23844861053750291'
 sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
-#SQL = 'select 1 num'
-#(_FacebookInterface._FacebookInterface.getCampaigns(app_id, app_secret, access_token, id))
-(_FacebookInterface._FacebookInterface.getInsights(app_id, app_secret, access_token, '23843162892500291', '2019-03-14','2020-07-13'))
+exec = ''
 
-#(_FacebookInterface._FacebookInterface.getInsights(app_id, app_secret, access_token, '23844932974050291', 0))
+
+if exec == 'Campaigns':
+    (_FacebookInterface._FacebookInterface.getCampaigns(app_id, app_secret, access_token, id))
+    pass
+
+if exec == 'Insights':
+    SQLdata = _SQLInterface._SQLInterface.getResultSet(sqlConnectionString,SQL)
+    for x in SQLdata.iterrows():
+        print(x[1][0])
+        (_FacebookInterface._FacebookInterface.getInsights(app_id, app_secret, access_token, x[1][0], x[1][2], x[1][3]))
+        pass
+    pass
+
 print("All Done")
 
-#SQL = 'select 1 num into dbo.TestTable'
-#_SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
-#print(SQLdata)
-
-
-#FacebookAdsApi.init(access_token=access_token)
-#
-#params = {
-#    'time_range':{'since':'2020-07-08','until':'2020-07-13'}
-#    ,'time_increment':1
-#    }
-#
-#fields = [
-#    'insights'
-#    ]
-#
-#a = AdAccount(id).get_ad_sets(params=params,fields=fields)
-#b = AdAccount(id).get_ads(params=params,fields=fields)
-#print(a)
-#print(b)
-
-
-#SQLdata = _SQLInterface._SQLInterface.getResultSet(sqlConnectionString,SQL)
-#print(SQLdata)
-
-#SQL = 'select 1 num into dbo.TestTable'
-#_SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
-#print(SQLdata)

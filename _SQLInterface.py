@@ -12,21 +12,22 @@ class _SQLInterface(object):
     SQL Server Interface for the Facebook API
     """
     def getResultSet(sqlConnectionString, SQL):
-
-        conn = pyodbc.connect(sqlConnectionString)
-
-        return(pandas.read_sql_query(SQL,conn))
+        try:
+            conn = pyodbc.connect(sqlConnectionString)
+            return(pandas.read_sql_query(SQL,conn))
+        
+        except ValueError:
+            return 'error' + ValueError
+        
         
 
     def insertRows(sqlConnectionString, dataFrame):
         
         try:
             conn = pyodbc.connect(sqlConnectionString)
-            
             cursor = conn.cursor()
             cursor.execute(dataFrame)
             conn.commit()
-
             return 'Successfully inserted data'
         
         except ValueError:

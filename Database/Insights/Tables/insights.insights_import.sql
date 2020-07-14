@@ -6,12 +6,12 @@ IF(
 	FROM sys.tables t 
 	inner join sys.schemas s
 	on t.schema_id = s.schema_id
-		where s.name = 'Staging'
+		where s.name = 'insights'
 		and t.name = 'insights_import'
 ) IS NOT NULL
-	DROP TABLE staging.insights_import;
+	DROP TABLE insights.insights_import;
 
-Create Table staging.insights_import
+Create Table insights.insights_import
 (
 	 PKID BIGINT Identity(1,1)
 	,campaignId varchar(200)

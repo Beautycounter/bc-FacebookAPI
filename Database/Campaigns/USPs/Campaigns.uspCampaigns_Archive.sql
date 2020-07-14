@@ -18,7 +18,7 @@ BEGIN
 		BEGIN TRANSACTION
 
 		--remove the Campaign object identifier
-		UPDATE staging.Campaigns_Import SET data_ = REPLACE(data_,'<Campaign>', '')
+		UPDATE campaigns.Campaigns_Import SET data_ = REPLACE(data_,'<Campaign>', '')
 
 		UPDATE ao
 		set islatest = 0
@@ -33,12 +33,12 @@ BEGIN
 						+ ':' + SUBSTRING(startDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' startDateTimeUTC
 					,CAST(SUBSTRING(REPLACE(updateDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(updateDateTimeUTC,20,3) 
 						+ ':' + SUBSTRING(updateDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' updateDateTimeUTC
-				FROM staging.Campaigns_Import 
+				FROM campaigns.Campaigns_Import 
 				EXCEPT
 				SELECT  CampaignId, startDateTimeUTC,updateDateTimeUTC FROM Campaigns.Campaigns_Archive WHERE isLatest = 1
 			) u
 			on ao.CampaignId = u.CampaignId
-			--SELECT * FROM staging.Campaigns_Import 
+			--SELECT * FROM campaigns.Campaigns_Import 
 		--Insert the updated row
 		INSERT INTO Campaigns.Campaigns_Archive
 		SELECT 
@@ -58,7 +58,7 @@ BEGIN
 				,upd.data_
 				,1 isLatest
 			
-			FROM staging.Campaigns_Import upd
+			FROM campaigns.Campaigns_Import upd
 			INNER JOIN
 			(
 				SELECT 
@@ -67,7 +67,7 @@ BEGIN
 						+ ':' + SUBSTRING(startDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' startDateTimeUTC
 					,CAST(SUBSTRING(REPLACE(updateDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(updateDateTimeUTC,20,3) 
 						+ ':' + SUBSTRING(updateDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' updateDateTimeUTC
-				FROM staging.Campaigns_Import 
+				FROM campaigns.Campaigns_Import 
 				EXCEPT
 				SELECT  CampaignId, startDateTimeUTC,updateDateTimeUTC FROM Campaigns.Campaigns_Archive WHERE isLatest = 1
 			) U

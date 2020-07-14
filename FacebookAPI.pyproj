@@ -21,6 +21,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Scratch.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="_FacebookInterface.py">
       <SubType>Code</SubType>
     </Compile>

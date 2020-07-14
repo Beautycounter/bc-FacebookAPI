@@ -6,72 +6,56 @@ IF (SELECT TOP 1 1
 	inner join sys.schemas s
 	on p.schema_id = s.schema_id
 	where 
-			s.name	= 'Campaigns'
-		and p.name = 'uspCampaigns_Archive'
+			s.name	= 'Insights'
+		and p.name = 'uspInsights_Archive'
 	) IS NOT NULL
-	DROP PROC Campaigns.uspCampaigns_Archive;
+	DROP PROC Insights.uspInsights_Archive;
 GO
 
-CREATE PROC Campaigns.uspCampaigns_Archive
+CREATE PROC Insights.uspInsights_Archive
 AS
 BEGIN
 		BEGIN TRANSACTION
 
 		--remove the Campaign object identifier
-		UPDATE staging.Campaigns_Import SET data_ = REPLACE(data_,'<Campaign>', '')
-
+		UPDATE insights.Insights_Import SET data_ = REPLACE(data_,'<AdsInsights>', '')
+		
 		UPDATE ao
 		set islatest = 0
 		--SELECT *
-		FROM.Campaigns.Campaigns_Archive ao
+		FROM.Insights.Insights_Archive ao
 			INNER JOIN 
 			(
-
-				SELECT 
-					 campaignId
-					,CAST(SUBSTRING(REPLACE(startDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(startDateTimeUTC,20,3) 
-						+ ':' + SUBSTRING(startDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' startDateTimeUTC
-					,CAST(SUBSTRING(REPLACE(updateDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(updateDateTimeUTC,20,3) 
-						+ ':' + SUBSTRING(updateDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' updateDateTimeUTC
-				FROM staging.Campaigns_Import 
+				SELECT CampaignId, insightDateTimeUTC, data_ FROM insights.Insights_Import 
 				EXCEPT
-				SELECT  CampaignId, startDateTimeUTC,updateDateTimeUTC FROM Campaigns.Campaigns_Archive WHERE isLatest = 1
+				SELECT CampaignId, insightDateTimeUTC, data_ FROM Insights.Insights_Archive WHERE isLatest = 1
 			) u
-			on ao.CampaignId = u.CampaignId
-			--SELECT * FROM staging.Campaigns_Import 
+			on ao.CampaignId = u.CampaignId and ao.insightDateTimeUTC = u.insightDateTimeUTC
+			--SELECT * FROM insights.Insights_Import 
 		--Insert the updated row
-		INSERT INTO Campaigns.Campaigns_Archive
+		INSERT INTO Insights.Insights_Archive
 		SELECT 
-			CampaignId, startDateTimeUTC, updateDateTimeUTC, importDateTimeUTC, campaignStatus, data_, isLatest
+			CampaignId, insightDateTimeUTC, importDateTimeUTC, data_, isLatest
 
 		FROM 
 		(
 			SELECT 
-				 ROW_NUMBER() OVER(PARTITION BY upd.CampaignId ORDER by PKID Desc) row_ 
+				 ROW_NUMBER() OVER(PARTITION BY upd.CampaignId, upd.insightDateTimeUTC ORDER by PKID Desc) row_ 
 				,upd.CampaignId
-				,CAST(SUBSTRING(REPLACE(upd.startDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(upd.startDateTimeUTC,20,3) 
-						+ ':' + SUBSTRING(upd.startDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' startDateTimeUTC
-					,CAST(SUBSTRING(REPLACE(upd.updateDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(upd.updateDateTimeUTC,20,3) 
-						+ ':' + SUBSTRING(upd.updateDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' updateDateTimeUTC
-				,importDateTimeUTC
-				,upd.campaignStatus
+				,upd.insightDateTimeUTC
+				,upd.importDateTimeUTC
 				,upd.data_
 				,1 isLatest
 			
-			FROM staging.Campaigns_Import upd
+			FROM insights.Insights_Import upd
 			INNER JOIN
 			(
-				SELECT 
-					 campaignId
-					,CAST(SUBSTRING(REPLACE(startDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(startDateTimeUTC,20,3) 
-						+ ':' + SUBSTRING(startDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' startDateTimeUTC
-					,CAST(SUBSTRING(REPLACE(updateDateTimeUTC,'T',' '),1,19) + ' ' + SUBSTRING(updateDateTimeUTC,20,3) 
-						+ ':' + SUBSTRING(updateDateTimeUTC,23,2) AS datetimeoffset(0)) AT TIME ZONE 'UTC' updateDateTimeUTC
-				FROM staging.Campaigns_Import 
+				SELECT CampaignId, insightDateTimeUTC, data_ FROM insights.Insights_Import 
 				EXCEPT
-				SELECT  CampaignId, startDateTimeUTC,updateDateTimeUTC FROM Campaigns.Campaigns_Archive WHERE isLatest = 1
+				SELECT CampaignId, insightDateTimeUTC, data_ FROM Insights.Insights_Archive WHERE isLatest = 1
+				
 			) U
-				on upd.CampaignId = U.CampaignId
+				on upd.CampaignId = U.CampaignId and upd.insightDateTimeUTC = u.insightDateTimeUTC
 		) U WHERE row_ = 1
 
 

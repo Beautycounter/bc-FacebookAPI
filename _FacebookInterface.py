@@ -9,12 +9,10 @@ import time
 
 class _FacebookInterface(object):
     """
-    Creates extract from the various API s
+    Creates extract from the various APIs
     """
     def getCampaigns(clientID, clientSecret, access_token, accountId):
         
-        FacebookAdsApi.init(access_token=access_token)
-
         fields = [
             'account_id'
             ,'adlabels'
@@ -37,21 +35,21 @@ class _FacebookInterface(object):
             
             }
 
-        sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
-            
-        for campaign in AdAccount(accountId).get_campaigns(fields=fields):
-            
-            SQL = "INSERT into staging.campaigns_import SELECT '" + campaign._data['id'] +"', '" + campaign._data['start_time'] + "', '" + campaign._data['updated_time'] + "', '"  + datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' + "', '" + campaign._data['effective_status'] + "', '" + str(campaign) + "'"
-            #print(SQL)
-            _SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
+        try:
+            FacebookAdsApi.init(access_token=access_token)
+            sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
+                
+            for campaign in AdAccount(accountId).get_campaigns(fields=fields):                
+                SQL = "INSERT into staging.campaigns_import SELECT '" + campaign._data['id'] +"', '" + campaign._data['start_time'] + "', '" + campaign._data['updated_time'] + "', '"  + datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' + "', '" + campaign._data['effective_status'] + "', '" + str(campaign) + "'"
+                _SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
 
-        return 'Campaigns Done'
-        #print (Campaigns)
-        
+            return 'Campaigns Done'
+            pass
+        except ValueError:
+            return 'error' + ValueError
+ 
     def getInsights(clientID, clientSecret, access_token, campaignId, startDate, endDate):
         
-        FacebookAdsApi.init(access_token=access_token)
-
         params = {
             'time_increment':1
             ,'level':'campaign'
@@ -78,13 +76,18 @@ class _FacebookInterface(object):
             ,'objective'
             ]
 
-        c = Campaign(campaignId)
+        try:
+            FacebookAdsApi.init(access_token=access_token)
+            c = Campaign(campaignId)
 
-        sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
-        for insight in c.get_insights(params=params,fields=fields):
-            SQL = "INSERT into staging.insights_import SELECT '"+ insight._data['campaign_id'] + "', '" + insight._data['date_start']+ "', '"+ datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' +"', '" + str(insight) + "'"
-            print(SQL)
-            _SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
+            sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
+            for insight in c.get_insights(params=params,fields=fields):
+                SQL = "INSERT into staging.insights_import SELECT '"+ insight._data['campaign_id'] + "', '" + insight._data['date_start']+ "', '"+ datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' +"', '" + str(insight) + "'"
+                print(SQL)
+                _SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
+            
+            return 'Insight Pull Done'
         
-        return 'Insights Done'
+        except ValueError:
+            return 'error' + ValueError
         
