@@ -40,33 +40,24 @@ class _FacebookInterface(object):
         sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
             
         for campaign in AdAccount(accountId).get_campaigns(fields=fields):
-            SQL = "INSERT into staging.ad_imports SELECT '"+ datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' +"', '" + str(campaign) + "'"
-            print(SQL)
+            
+            SQL = "INSERT into staging.campaigns_import SELECT '" + campaign._data['id'] +"', '" + campaign._data['start_time'] + "', '" + campaign._data['updated_time'] + "', '"  + datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' + "', '" + campaign._data['effective_status'] + "', '" + str(campaign) + "'"
+            #print(SQL)
             _SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
 
         return 'Campaigns Done'
         #print (Campaigns)
         
-    def getInsights(clientID, clientSecret, access_token, campaignId, timePull):
+    def getInsights(clientID, clientSecret, access_token, campaignId, startDate, endDate):
         
         FacebookAdsApi.init(access_token=access_token)
 
-        def dateSwitch(timePull):
-                switcher={
-                    0: Campaign.DatePreset.yesterday
-                    ,1: Campaign.DatePreset.last_7d
-                    ,2: Campaign.DatePreset.last_14d
-                    } 
-                return switcher
-        
         params = {
-            #'date_preset': Campaign.DatePreset.last_7d
             'time_increment':1
             ,'level':'campaign'
-            ,'time_range':{'since':'2020-07-10','until':'2020-07-10'}
+            ,'time_range':{'since':startDate,'until':endDate}
            }
         
-
         fields = [
             'campaign_id'
             ,'campaign_name'
@@ -74,6 +65,7 @@ class _FacebookInterface(object):
             ,'adset_name'
             ,'ad_id'
             ,'ad_name'
+            ,'date_start'
             ,'unique_inline_link_click_ctr'
             ,'clicks'
             ,'impressions'
@@ -90,7 +82,7 @@ class _FacebookInterface(object):
 
         sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
         for insight in c.get_insights(params=params,fields=fields):
-            SQL = "INSERT into staging.ad_imports SELECT '"+ datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' +"', '" + str(insight) + "'"
+            SQL = "INSERT into staging.insights_import SELECT '"+ insight._data['campaign_id'] + "', '" + insight._data['date_start']+ "', '"+ datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + 'Z' +"', '" + str(insight) + "'"
             print(SQL)
             _SQLInterface._SQLInterface.insertRows(sqlConnectionString, SQL)
         

@@ -25,8 +25,8 @@ id = 'act_1911651192179072'
 #'23844861053750291'
 sqlConnectionString = 'Driver={SQL Server};SERVER=datamart-dev.beautycounter.com;Database=facebook;UID=dataworker;PWD=dataworker1'
 #SQL = 'select 1 num'
-(_FacebookInterface._FacebookInterface.getCampaigns(app_id, app_secret, access_token, id))
-#print(_FacebookInterface._FacebookInterface.getInsights(app_id, app_secret, access_token, '23844932974050291', 0))
+#(_FacebookInterface._FacebookInterface.getCampaigns(app_id, app_secret, access_token, id))
+(_FacebookInterface._FacebookInterface.getInsights(app_id, app_secret, access_token, '23843162892500291', '2019-03-14','2020-07-13'))
 
 #(_FacebookInterface._FacebookInterface.getInsights(app_id, app_secret, access_token, '23844932974050291', 0))
 print("All Done")
